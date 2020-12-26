@@ -102,8 +102,7 @@ tracks/0/keys = {
 }
 
 [sub_resource type="Animation" id=8]
-length = 0.3
-loop = true
+length = 0.1
 tracks/0/type = "value"
 tracks/0/path = NodePath("Sprite:frame")
 tracks/0/interp = 1
@@ -111,10 +110,10 @@ tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0, 0.134954 ),
-"transitions": PoolRealArray( 1, 1 ),
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
 "update": 1,
-"values": [ 10, 0 ]
+"values": [ 10 ]
 }
 
 [sub_resource type="Animation" id=9]
@@ -204,6 +203,7 @@ anims/Splash = SubResource( 11 )
 
 [node name="StartFalling" type="Timer" parent="Timers"]
 process_mode = 0
+wait_time = 0.5
 [connection signal="dimension_changed" from="." to="." method="_on_Player_dimension_changed"]
 [connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_finished"]
 [connection signal="animation_started" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_started"]

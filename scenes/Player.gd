@@ -51,7 +51,7 @@ func actions():
 	if Input.is_action_pressed("right"):
 		motion.x += ACCELERATION
 		facing_right = true
-		if !was_in_air:
+		if !was_in_air and !is_falling:
 			if !is_on_wall():
 				$AnimationPlayer.play("Run")
 			else:
@@ -59,22 +59,27 @@ func actions():
 	elif Input.is_action_pressed("left"):
 		motion.x -= ACCELERATION
 		facing_right = false
-		if !was_in_air:
+		if !was_in_air and !is_falling:
 			if !is_on_wall():
 				$AnimationPlayer.play("Run")
 			else:
 				$AnimationPlayer.play("Push")			
 	else:
 		motion.x = lerp(motion.x,0,0.2)
-		if !was_in_air:
+		if !was_in_air and !is_falling:
 			$AnimationPlayer.play("Idle")	
+			
 
 	
 	if is_on_floor(): 
-		was_in_air = false
+		was_in_air = false		
 		$Timers/StartFalling.stop()	
+		
 		if is_falling:		
 			$AnimationPlayer.play("Splash")
+
+
+	
 
 		if Input.is_action_pressed("jump"):
 			
@@ -82,6 +87,8 @@ func actions():
 			$AnimationPlayer.play("Jump")
 			motion.y = -JUMPFORCE
 			was_in_air = true
+			is_falling = false
+			
 
 	if !is_on_floor():		
 
@@ -92,21 +99,10 @@ func actions():
 			if $Timers/StartFalling.is_stopped():
 				$Timers/StartFalling.start()
 			
-
+	
 
 				
 	motion = move_and_slide(motion,UP)
-	
-	prevent_stuck()
-	
-
-	
-	
-
-	
-	
-
-	
 	
 func _on_World_dimension_invert(color):
 
@@ -119,25 +115,26 @@ func invert(color):
 	set_collision_mask_bit(1,color)
 	set_collision_mask_bit(2,!color)
 
-#
-
-func prevent_stuck():
+func play_once(current_animation, animation,  sound):
 	
-	pass
+	if current_animation == animation:
+		emit_signal("sound_played",sound)
+	else:
+		emit_signal("sound_stoped",sound)
 		
 
 func _on_AnimationPlayer_animation_started(anim_name):
+	play_once(anim_name, "Fall", "falling")
+	play_once(anim_name, "Splash", "splash")
 	
-	if anim_name == "Fall":
-		emit_signal("sound_played","falling")
-	else:
-		emit_signal("sound_stoped","falling")
 		
 
 func _on_AnimationPlayer_animation_finished(anim_name):
 	
 	if anim_name == "Splash":
 		is_falling = false
+		was_in_air = false
+		
 	
 
 	
