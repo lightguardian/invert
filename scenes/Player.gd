@@ -1,6 +1,10 @@
 extends KinematicBody2D
 
 signal dimension_changed
+signal sound_played(sound_fx)
+signal sound_stoped(sound_fx)
+
+
 
 const UP = Vector2(0, -1)
 const GRAVITY = 20
@@ -11,10 +15,7 @@ const ACCELERATION = 10
 var motion = Vector2()
 var facing_right = true
 var was_in_air = false
-
-
-
-
+var is_falling = false
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -47,10 +48,6 @@ func actions():
 	if Input.is_action_just_pressed("change"):
 		emit_signal("dimension_changed")
 
-		
-
-		
-	
 	if Input.is_action_pressed("right"):
 		motion.x += ACCELERATION
 		facing_right = true
@@ -58,7 +55,7 @@ func actions():
 			if !is_on_wall():
 				$AnimationPlayer.play("Run")
 			else:
-				$AnimationPlayer.play("Idle")	
+				$AnimationPlayer.play("Push")	
 	elif Input.is_action_pressed("left"):
 		motion.x -= ACCELERATION
 		facing_right = false
@@ -66,7 +63,7 @@ func actions():
 			if !is_on_wall():
 				$AnimationPlayer.play("Run")
 			else:
-				$AnimationPlayer.play("Idle")			
+				$AnimationPlayer.play("Push")			
 	else:
 		motion.x = lerp(motion.x,0,0.2)
 		if !was_in_air:
@@ -74,28 +71,41 @@ func actions():
 
 	
 	if is_on_floor(): 
-		
-		if was_in_air:
+		was_in_air = false
+		$Timers/StartFalling.stop()	
+		if is_falling:		
 			$AnimationPlayer.play("Splash")
-			
+
 		if Input.is_action_pressed("jump"):
+			
+			emit_signal("sound_played","jump")
+			$AnimationPlayer.play("Jump")
 			motion.y = -JUMPFORCE
 			was_in_air = true
+
 	if !is_on_floor():		
-		
-		if motion.y < 0:
-			$AnimationPlayer.play("Jump")
-			was_in_air = true
-		elif motion.y > 190:
-			$AnimationPlayer.play("Fall")
-			was_in_air = true
+
+		was_in_air = true
+
+		if motion.y == 200:
+
+			if $Timers/StartFalling.is_stopped():
+				$Timers/StartFalling.start()
+			
+
 
 				
 	motion = move_and_slide(motion,UP)
 	
-	print(motion.y)
+	prevent_stuck()
+	
 
 	
+	
+
+	
+	
+
 	
 	
 func _on_World_dimension_invert(color):
@@ -104,17 +114,37 @@ func _on_World_dimension_invert(color):
 	pass # Replace with  body.
 	
 func invert(color):
+	emit_signal("sound_played","invert")
 	modulate = Color(0,0,0) if color else Color(1,1,1)
 	set_collision_mask_bit(1,color)
-	set_collision_mask_bit(2,!color)	
+	set_collision_mask_bit(2,!color)
 
+#
 
-func _on_AnimationPlayer_animation_finished(anim_name):
-	print(anim_name)
-	was_in_air = false
-	pass # Replace with function body.
-
+func prevent_stuck():
+	
+	pass
+		
 
 func _on_AnimationPlayer_animation_started(anim_name):
+	
+	if anim_name == "Fall":
+		emit_signal("sound_played","falling")
+	else:
+		emit_signal("sound_stoped","falling")
+		
 
+func _on_AnimationPlayer_animation_finished(anim_name):
+	
+	if anim_name == "Splash":
+		is_falling = false
+	
+
+	
+
+
+
+func _on_Fall_timeout():
+	$AnimationPlayer.play("Fall")
+	is_falling = true
 	pass # Replace with function body.

@@ -22,4 +22,5 @@ func invert(color):
 
 
 func _on_World_dimension_invert(color):
+
 	pass # Replace with function body.

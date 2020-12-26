@@ -1,10 +1,10 @@
-[gd_scene load_steps=11 format=2]
+[gd_scene load_steps=14 format=2]
 
 [ext_resource path="res://assets/sprites/squarie.png" type="Texture" id=1]
 [ext_resource path="res://scenes/Player.gd" type="Script" id=2]
 
 [sub_resource type="RectangleShape2D" id=1]
-extents = Vector2( 8, 7 )
+extents = Vector2( 7, 7 )
 
 [sub_resource type="Animation" id=2]
 resource_name = "Blink"
@@ -54,6 +54,39 @@ tracks/0/keys = {
 }
 
 [sub_resource type="Animation" id=5]
+resource_name = "Freeze"
+length = 0.6
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.0528634, 0.0999551, 0.147047, 0.28409, 0.38409, 0.48409 ),
+"transitions": PoolRealArray( 1, 1, 1, 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 54, 55, 56, 57, 58, 59, 60 ]
+}
+
+[sub_resource type="Animation" id=6]
+resource_name = "Ice"
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 1,
+"values": [ 50 ]
+}
+
+[sub_resource type="Animation" id=7]
 length = 10.0
 tracks/0/type = "value"
 tracks/0/path = NodePath("Sprite:frame")
@@ -68,7 +101,8 @@ tracks/0/keys = {
 "values": [ 0, 1, 4, 5, 6, 1, 2, 5, 1, 2, 5, 0 ]
 }
 
-[sub_resource type="Animation" id=6]
+[sub_resource type="Animation" id=8]
+length = 0.3
 loop = true
 tracks/0/type = "value"
 tracks/0/path = NodePath("Sprite:frame")
@@ -77,13 +111,30 @@ tracks/0/loop_wrap = true
 tracks/0/imported = false
 tracks/0/enabled = true
 tracks/0/keys = {
-"times": PoolRealArray( 0 ),
-"transitions": PoolRealArray( 1 ),
+"times": PoolRealArray( 0, 0.134954 ),
+"transitions": PoolRealArray( 1, 1 ),
 "update": 1,
-"values": [ 10 ]
+"values": [ 10, 0 ]
 }
 
-[sub_resource type="Animation" id=7]
+[sub_resource type="Animation" id=9]
+resource_name = "Push"
+length = 0.7
+loop = true
+tracks/0/type = "value"
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0, 0.2, 0.4, 0.6 ),
+"transitions": PoolRealArray( 1, 1, 1, 1 ),
+"update": 1,
+"values": [ 26, 27, 28, 29 ]
+}
+
+[sub_resource type="Animation" id=10]
 length = 0.3
 loop = true
 tracks/0/type = "value"
@@ -96,10 +147,10 @@ tracks/0/keys = {
 "times": PoolRealArray( 0, 0.1, 0.2 ),
 "transitions": PoolRealArray( 1, 1, 1 ),
 "update": 1,
-"values": [ 7, 6, 9 ]
+"values": [ 7, 9, 6 ]
 }
 
-[sub_resource type="Animation" id=8]
+[sub_resource type="Animation" id=11]
 length = 0.45
 tracks/0/type = "value"
 tracks/0/path = NodePath("Sprite:frame")
@@ -115,6 +166,7 @@ tracks/0/keys = {
 }
 
 [node name="Player" type="KinematicBody2D"]
+position = Vector2( 0, 7 )
 z_index = 1
 collision_mask = 0
 script = ExtResource( 2 )
@@ -123,8 +175,8 @@ script = ExtResource( 2 )
 light_mask = 0
 position = Vector2( 0, -12 )
 texture = ExtResource( 1 )
-hframes = 26
-frame = 18
+hframes = 61
+frame = 10
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2( 0, -7 )
@@ -140,10 +192,19 @@ smoothing_speed = 10.0
 anims/Blink = SubResource( 2 )
 anims/Death = SubResource( 3 )
 anims/Fall = SubResource( 4 )
-anims/Idle = SubResource( 5 )
-anims/Jump = SubResource( 6 )
-anims/Run = SubResource( 7 )
-anims/Splash = SubResource( 8 )
+anims/Freeze = SubResource( 5 )
+anims/Ice = SubResource( 6 )
+anims/Idle = SubResource( 7 )
+anims/Jump = SubResource( 8 )
+anims/Push = SubResource( 9 )
+anims/Run = SubResource( 10 )
+anims/Splash = SubResource( 11 )
+
+[node name="Timers" type="Node" parent="."]
+
+[node name="StartFalling" type="Timer" parent="Timers"]
+process_mode = 0
 [connection signal="dimension_changed" from="." to="." method="_on_Player_dimension_changed"]
 [connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_finished"]
 [connection signal="animation_started" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_started"]
+[connection signal="timeout" from="Timers/StartFalling" to="." method="_on_Fall_timeout"]
