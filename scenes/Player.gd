@@ -12,17 +12,26 @@ const MAXFALLSPEED = 200
 const MAXSPEED = 80
 const JUMPFORCE = 270
 const ACCELERATION = 10
+const SNAP = Vector2(0,16)
+
 var motion = Vector2()
 var facing_right = true
 var was_in_air = false
 var is_falling = false
+var initial_position 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	
+	initial_position = position
 	pass # Replace with function body.
 
+
 func _physics_process(delta):
+	
+	if Input.is_action_just_pressed("reset"):
+
+		position = initial_position
+
 	
 	motion.y += GRAVITY
 	
@@ -36,10 +45,14 @@ func _physics_process(delta):
 	
 	motion.x = clamp(motion.x, -MAXSPEED, MAXSPEED)
 	
-
-		
-	
 	actions()
+	
+	# Player position
+	set_label_position(position)
+	
+	# Debug
+	
+	print($Timers/StartFalling.time_left)
 	
 	
 
@@ -94,24 +107,45 @@ func actions():
 
 		was_in_air = true
 
-		if motion.y == 200:
+		if motion.y < MAXFALLSPEED:
 
 			if $Timers/StartFalling.is_stopped():
 				$Timers/StartFalling.start()
 			
 	
 
-				
+					
 	motion = move_and_slide(motion,UP)
+
+
+
+func change_label_color(color):
+#	for i in $Labels.get_children():
+#
+#		for j in i.get_children():
+#
+#			j.modulate = Color(1,1,1)
+	pass
+				
+	
 	
 func _on_World_dimension_invert(color):
 
 	invert(color)
 	pass # Replace with  body.
+
+func get_color(color):
+	return Color(0,0,0) if color else Color(1,1,1)
+		
+func set_label_position(position):
+	$Labels/position.text = "X: %d Y: %d" % [position.x, position.y]
 	
+			
 func invert(color):
 	emit_signal("sound_played","invert")
-	modulate = Color(0,0,0) if color else Color(1,1,1)
+	modulate = get_color(color)
+	change_label_color(color)
+
 	set_collision_mask_bit(1,color)
 	set_collision_mask_bit(2,!color)
 
@@ -144,4 +178,14 @@ func _on_AnimationPlayer_animation_finished(anim_name):
 func _on_Fall_timeout():
 	$AnimationPlayer.play("Fall")
 	is_falling = true
+	$Timers/StartFalling.stop()	
+
+	pass # Replace with function body.
+
+
+
+
+
+func _on_Area2D_body_entered(body):
+	
 	pass # Replace with function body.

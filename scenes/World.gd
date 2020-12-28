@@ -2,7 +2,7 @@ extends Node2D
 
 signal dimension_invert(color)
 
-var global_color = true;
+var global_color = false;
 
 func _ready():
 	invert(global_color)
