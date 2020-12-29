@@ -55,15 +55,17 @@ func _physics_process(delta):
 	# Player position
 	set_label_position(position)
 	
-	# Debug]
+	# DEBUG CUIDADO]
+
 	if nearest_point != null:
 		emit_signal("line_drawned", position, nearest_point.position)
+		if has_collision:
+			go_to_position(nearest_point, delta)
+		else:		
+			motion = move_and_slide(motion,UP)
+	else:
+		motion = move_and_slide(motion,UP)				
 		pass
-
-	
-
-	
-	
 
 func actions():
 	
@@ -124,7 +126,7 @@ func actions():
 	
 
 					
-	motion = move_and_slide(motion,UP)
+
 
 
 
@@ -199,10 +201,13 @@ func _on_Fall_timeout():
 	pass # Replace with function body.
 
 func toggle_collision(state):
-	
 	for i in range(1,4): 
-
 		set_collision_mask_bit(i,state)
+		
+func go_to_position(node,delta):
+	
+	motion += move_and_slide(position.direction_to(node.position) * 400)
+	#position += position.direction_to(node.position) * delta
 	
 func get_nearest(nodes):
 	var nearest_node
@@ -219,26 +224,25 @@ func get_nearest(nodes):
 	
 
 func _on_Area2D_body_entered(body):
-
-	toggle_collision(false)
-	has_collision = false
-	nearest_point = get_nearest(gravity_points)
-
+	pass
 	
-
-	
-	
-	pass # Replace with function body.
-
-
 func _on_Area2D_body_exited(body):
 	invert_collision(self ,global_color)
-	has_collision = true
-	
+	print("sauy")
+	has_collision = false
+	motion = Vector2(0,0)
 	
 	pass # Replace with function body.
 
 
 func _on_World_gravity_points_sended(gravity_points):
 	self.gravity_points = gravity_points
+	pass # Replace with function body.
+
+
+func _on_Area2D_body_shape_entered(body_id, body, body_shape, area_shape):
+	toggle_collision(false)
+	has_collision = true
+	nearest_point = get_nearest(gravity_points)
+	print("entrou")
 	pass # Replace with function body.
