@@ -165,7 +165,7 @@ tracks/0/keys = {
 }
 
 [sub_resource type="RectangleShape2D" id=12]
-extents = Vector2( 1, 1 )
+extents = Vector2( 1, 2 )
 
 [node name="Player" type="KinematicBody2D"]
 z_index = 1
@@ -185,6 +185,7 @@ shape = SubResource( 1 )
 
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
+zoom = Vector2( 10, 10 )
 process_mode = 0
 smoothing_enabled = true
 smoothing_speed = 10.0
@@ -208,6 +209,8 @@ anims/Splash = SubResource( 11 )
 process_mode = 0
 
 [node name="Area2D" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 14
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
 shape = SubResource( 12 )
@@ -235,3 +238,4 @@ __meta__ = {
 [connection signal="animation_started" from="AnimationPlayer" to="." method="_on_AnimationPlayer_animation_started"]
 [connection signal="timeout" from="Timers/StartFalling" to="." method="_on_Fall_timeout"]
 [connection signal="body_entered" from="Area2D" to="." method="_on_Area2D_body_entered"]
+[connection signal="body_exited" from="Area2D" to="." method="_on_Area2D_body_exited"]

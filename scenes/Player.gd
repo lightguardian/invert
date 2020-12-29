@@ -3,7 +3,7 @@ extends KinematicBody2D
 signal dimension_changed
 signal sound_played(sound_fx)
 signal sound_stoped(sound_fx)
-
+signal line_drawned(position_a, position_b)
 
 
 const UP = Vector2(0, -1)
@@ -18,7 +18,12 @@ var motion = Vector2()
 var facing_right = true
 var was_in_air = false
 var is_falling = false
+var has_collision = true
+var gravity_points = []
+var nearest_point 
+
 var initial_position 
+var global_color
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -29,8 +34,8 @@ func _ready():
 func _physics_process(delta):
 	
 	if Input.is_action_just_pressed("reset"):
+		reset()
 
-		position = initial_position
 
 	
 	motion.y += GRAVITY
@@ -50,9 +55,13 @@ func _physics_process(delta):
 	# Player position
 	set_label_position(position)
 	
-	# Debug
+	# Debug]
+	if nearest_point != null:
+		emit_signal("line_drawned", position, nearest_point.position)
+		pass
+
 	
-	print($Timers/StartFalling.time_left)
+
 	
 	
 
@@ -130,7 +139,7 @@ func change_label_color(color):
 	
 	
 func _on_World_dimension_invert(color):
-
+	global_color = color
 	invert(color)
 	pass # Replace with  body.
 
@@ -140,15 +149,22 @@ func get_color(color):
 func set_label_position(position):
 	$Labels/position.text = "X: %d Y: %d" % [position.x, position.y]
 	
+func reset():
+	position = initial_position	
 			
 func invert(color):
 	emit_signal("sound_played","invert")
 	modulate = get_color(color)
 	change_label_color(color)
-
-	set_collision_mask_bit(1,color)
-	set_collision_mask_bit(2,!color)
-
+	invert_collision(self,color)
+	invert_collision($Area2D,color)
+	# Area Collision
+	
+func invert_collision(node,color):
+	node.set_collision_mask_bit(1,color)
+	node.set_collision_mask_bit(2,!color)
+	node.set_collision_mask_bit(3,true)
+	
 func play_once(current_animation, animation,  sound):
 	
 	if current_animation == animation:
@@ -182,10 +198,47 @@ func _on_Fall_timeout():
 
 	pass # Replace with function body.
 
+func toggle_collision(state):
+	
+	for i in range(1,4): 
+
+		set_collision_mask_bit(i,state)
+	
+func get_nearest(nodes):
+	var nearest_node
+	if !nodes.empty():
+		nearest_node = nodes[0]
+	
+	for i in nodes:
+		if position.distance_to(i.position) < position.distance_to(nearest_node.position):
+			nearest_node = i
+
+	return nearest_node
 
 
-
+	
 
 func _on_Area2D_body_entered(body):
+
+	toggle_collision(false)
+	has_collision = false
+	nearest_point = get_nearest(gravity_points)
+
 	
+
+	
+	
+	pass # Replace with function body.
+
+
+func _on_Area2D_body_exited(body):
+	invert_collision(self ,global_color)
+	has_collision = true
+	
+	
+	pass # Replace with function body.
+
+
+func _on_World_gravity_points_sended(gravity_points):
+	self.gravity_points = gravity_points
 	pass # Replace with function body.
