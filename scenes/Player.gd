@@ -12,15 +12,16 @@ const MAXFALLSPEED = 200
 const MAXSPEED = 80
 const JUMPFORCE = 270
 const ACCELERATION = 10
-const SNAP = Vector2(0,16)
+const SNAP = 16
 
 var motion = Vector2()
 var facing_right = true
 var was_in_air = false
 var is_falling = false
-var has_collision = true
+var inside = false setget set_inside, get_inside
 var gravity_points = []
 var nearest_point 
+var current_cell
 
 var initial_position 
 var global_color
@@ -32,10 +33,12 @@ func _ready():
 
 
 func _physics_process(delta):
-	
+
+	print(get_center(get_current_cell(position, SNAP), SNAP))
+	print(get_current_cell(position, SNAP))	
 	if Input.is_action_just_pressed("reset"):
 		reset()
-
+	
 
 	
 	motion.y += GRAVITY
@@ -50,15 +53,18 @@ func _physics_process(delta):
 	
 	motion.x = clamp(motion.x, -MAXSPEED, MAXSPEED)
 	
-	actions()
+	if !inside:
+		actions()
 	
 	# Player position
 	set_label_position(position)
 	
 	# Debug]
-	if nearest_point != null:
-		emit_signal("line_drawned", position, nearest_point.position)
-		pass
+
+	
+	if get_inside():
+		motion = Vector2(0,0)
+		pass	
 
 	
 
@@ -127,7 +133,10 @@ func actions():
 	motion = move_and_slide(motion,UP)
 
 
-
+func draw_a_line():
+	if nearest_point != null:
+		emit_signal("line_drawned", position, nearest_point.position)
+	
 func change_label_color(color):
 #	for i in $Labels.get_children():
 #
@@ -137,7 +146,7 @@ func change_label_color(color):
 	pass
 				
 	
-	
+		
 func _on_World_dimension_invert(color):
 	global_color = color
 	invert(color)
@@ -163,7 +172,13 @@ func invert(color):
 func invert_collision(node,color):
 	node.set_collision_mask_bit(1,color)
 	node.set_collision_mask_bit(2,!color)
-	node.set_collision_mask_bit(3,true)
+
+func get_center(init_position, size):
+	
+	return Vector2(init_position.x + size/2, init_position.y + size/2)
+	
+	
+	pass
 	
 func play_once(current_animation, animation,  sound):
 	
@@ -197,10 +212,30 @@ func _on_Fall_timeout():
 	$Timers/StartFalling.stop()	
 
 	pass # Replace with function body.
+func get_quadrant(current_position, cell_size):
+	var aux_x = floor(current_position.x /cell_size)
+	var aux_y = floor(current_position.y /cell_size)
+	
+	return {x = aux_x, y = aux_y}
+	
+	
+func get_current_cell(some_position, cell_size):
+	
+	var aux_x = cell_size * floor(some_position.x / cell_size)
+	var aux_y = cell_size * floor(some_position.y / cell_size)
+	
+	return Vector2(aux_x, aux_y)
+	
 
+	
+	
+	
+	
+	
+	
 func toggle_collision(state):
 	
-	for i in range(1,4): 
+	for i in range(1,3): 
 
 		set_collision_mask_bit(i,state)
 	
@@ -209,7 +244,6 @@ func get_nearest(nodes):
 	if !nodes.empty():
 		nearest_node = nodes[0]
 		
-	"Test git"	
 	
 	for i in nodes:
 		if position.distance_to(i.position) < position.distance_to(nearest_node.position):
@@ -217,15 +251,20 @@ func get_nearest(nodes):
 
 	return nearest_node
 
-
+func get_inside():
+	return inside
+func set_inside(value):
+	inside = value
 	
 
 func _on_Area2D_body_entered(body):
+	
+	set_inside(true)
 
-	toggle_collision(false)
-	has_collision = false
-	nearest_point = get_nearest(gravity_points)
 
+
+
+	
 	
 
 	
@@ -234,8 +273,8 @@ func _on_Area2D_body_entered(body):
 
 
 func _on_Area2D_body_exited(body):
-	invert_collision(self ,global_color)
-	has_collision = true
+
+
 	
 	
 	pass # Replace with function body.
