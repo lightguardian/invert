@@ -1,9 +1,13 @@
 extends KinematicBody2D
 
+var Grid = load("res://src/util/Grid.gd")
+
 signal dimension_changed
 signal sound_played(sound_fx)
 signal sound_stoped(sound_fx)
 signal line_drawned(position_a, position_b)
+signal scanned(node_position, size_cell, type)
+
 
 
 const UP = Vector2(0, -1)
@@ -14,6 +18,8 @@ const JUMPFORCE = 270
 const ACCELERATION = 10
 const SNAP = 16
 
+
+
 var motion = Vector2()
 var facing_right = true
 var was_in_air = false
@@ -22,6 +28,7 @@ var inside = false setget set_inside, get_inside
 var gravity_points = []
 var nearest_point 
 var current_cell
+
 
 var initial_position 
 var global_color
@@ -32,14 +39,16 @@ func _ready():
 	pass # Replace with function body.
 
 
-func _physics_process(delta):
+func _init():
+	Grid = Grid.new()
 
-	print(get_center(get_current_cell(position, SNAP), SNAP))
-	print(get_current_cell(position, SNAP))	
+
+func _physics_process(delta):
+	
+	#Util.cross_scan(position, SNAP)
+
 	if Input.is_action_just_pressed("reset"):
 		reset()
-	
-
 	
 	motion.y += GRAVITY
 	
@@ -75,6 +84,7 @@ func actions():
 	
 	if Input.is_action_just_pressed("change"):
 		emit_signal("dimension_changed")
+		pass
 
 	if Input.is_action_pressed("right"):
 		motion.x += ACCELERATION
@@ -110,7 +120,7 @@ func actions():
 	
 
 		if Input.is_action_pressed("jump"):
-			
+
 			emit_signal("sound_played","jump")
 			$AnimationPlayer.play("Jump")
 			motion.y = -JUMPFORCE
@@ -173,12 +183,7 @@ func invert_collision(node,color):
 	node.set_collision_mask_bit(1,color)
 	node.set_collision_mask_bit(2,!color)
 
-func get_center(init_position, size):
-	
-	return Vector2(init_position.x + size/2, init_position.y + size/2)
-	
-	
-	pass
+
 	
 func play_once(current_animation, animation,  sound):
 	
@@ -219,13 +224,6 @@ func get_quadrant(current_position, cell_size):
 	return {x = aux_x, y = aux_y}
 	
 	
-func get_current_cell(some_position, cell_size):
-	
-	var aux_x = cell_size * floor(some_position.x / cell_size)
-	var aux_y = cell_size * floor(some_position.y / cell_size)
-	
-	return Vector2(aux_x, aux_y)
-	
 
 	
 	
@@ -257,9 +255,16 @@ func set_inside(value):
 	inside = value
 	
 
+	
+	
+
 func _on_Area2D_body_entered(body):
 	
 	set_inside(true)
+	
+	
+	emit_signal("scanned", position, SNAP, "CROSS")
+
 
 
 
@@ -283,3 +288,5 @@ func _on_Area2D_body_exited(body):
 func _on_World_gravity_points_sended(gravity_points):
 	self.gravity_points = gravity_points
 	pass # Replace with function body.
+
+
