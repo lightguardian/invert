@@ -5,7 +5,6 @@ var Grid = load("res://src/util/Grid.gd")
 signal dimension_changed
 signal sound_played(sound_fx)
 signal sound_stoped(sound_fx)
-signal line_drawned(position_a, position_b)
 signal scanned(node_position, size_cell, type)
 
 
@@ -143,10 +142,7 @@ func actions():
 	motion = move_and_slide(motion,UP)
 
 
-func draw_a_line():
-	if nearest_point != null:
-		emit_signal("line_drawned", position, nearest_point.position)
-	
+
 func change_label_color(color):
 #	for i in $Labels.get_children():
 #
@@ -290,3 +286,11 @@ func _on_World_gravity_points_sended(gravity_points):
 	pass # Replace with function body.
 
 
+
+
+func _on_Checker_scan_finished(find, pos):
+	if find:
+		position = pos
+		inside = false
+
+	pass # Replace with function body.

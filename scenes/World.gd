@@ -1,19 +1,16 @@
 extends Node2D
 
 signal dimension_invert(color)
-signal gravity_points_sended(gravity_points)
+
 
 var global_color = false;
 
 func _ready():
 	invert(global_color)
 	emit_signal("dimension_invert", global_color)
-	emit_signal("gravity_points_sended", get_gravity_points())
-	
-func get_gravity_points():
-	return $GravityPoints.get_children()
 
 	
+
 
 
 func _on_Player_dimension_changed():
